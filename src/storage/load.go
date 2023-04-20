@@ -1,14 +1,23 @@
 package storage
 
-type Storage struct {
-	key   string
-	value string
-}
+import (
+	"io"
+	"os"
+)
 
-func (s *Storage) Key() string {
-	return s.key
-}
+// load file from disk
+func Load(path string) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
 
-func (s *Storage) Value() string {
-	return s.value
+	// read file
+	data, err := io.ReadAll(file)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
 }
