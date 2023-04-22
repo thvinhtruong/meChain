@@ -75,7 +75,7 @@ func (e *NewNodeEvent) GetRoom() int32 {
 	return 0 // all subscribers
 }
 
-// GetPayload returns the serialized node data
+// GetPayload returns the serialized node data but node will not use this method
 func (e *NewNodeEvent) GetPayload() []byte {
 	return e.Payload
 }

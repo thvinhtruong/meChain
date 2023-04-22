@@ -76,7 +76,12 @@ func (e *EventHandler) HandleNewNode(node INode) {
 	node.CreateNode(node.GetProjectID(), sentBlockchain, nil)
 
 	// receive blockchain from master
-
-	// save to db
+	blockchain := entity.DeserializeBlockchain(sentBlockchain)
+	if blockchain == nil {
+		log.Println("Invalid blockchain happends at handler: ", node.GetID())
+		return
+	}
+	// save node to db
+	// node.SaveNode()
 
 }

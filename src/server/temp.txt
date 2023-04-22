@@ -1,0 +1,162 @@
+Question 2:
+
+a. 
+
+import pandas as pd
+from statsmodels.tsa.stattools import adfuller
+
+# Load the dataset
+df = pd.read_excel('Examination Dataset Final.xls', sheet_name='Data')
+eur = df['EUR']
+swf = df['SWF']
+
+# Perform the ADF test on the EUR variable
+eur_adf = adfuller(eur)
+print('EUR ADF Statistic:', eur_adf[0])
+print('EUR p-value:', eur_adf[1])
+print('EUR Critical Values:', eur_adf[4])
+
+# Perform the ADF test on the SWF variable
+swf_adf = adfuller(swf)
+print('SWF ADF Statistic:', swf_adf[0])
+print('SWF p-value:', swf_adf[1])
+print('SWF Critical Values:', swf_adf[4])
+
+# result
+EUR ADF Statistic: -1.159157692154343
+EUR p-value: 0.6922137407807522
+EUR Critical Values: {'1%': -3.432688386243024, '5%': -2.862695374789583, '10%': -2.567382248496825}
+SWF ADF Statistic: -1.9018316202478165
+SWF p-value: 0.33006271195672075
+SWF Critical Values: {'1%': -3.432688386243024, '5%': -2.862695374789583, '10%': -2.567382248496825}
+
+# Conclusion:
+The p-value for the EUR variable is 0.6922, which is greater than 0.05, and the absolute value of the ADF statistic (-1.1592) is less than all the critical values. Therefore, we cannot reject the null hypothesis of non-stationarity, and we conclude that the EUR variable is non-stationary.
+The p-value for the SWF variable is 0.3301, which is also greater than 0.05, and the absolute value of the ADF statistic (-1.9018) is less than all the critical values. Therefore, we cannot reject the null hypothesis of non-stationarity, and we conclude that the SWF variable is also non-stationary.
+Based on these results, we can say that both the EUR and SWF variables are integrated of order one (i.e., I(1)), meaning that they need to be differenced once to become stationary.
+
+b.
+import pandas as pd
+import statsmodels.api as sm
+
+# Load the dataset
+df = pd.read_excel('Examination Dataset Final.xls')
+
+# Run the regression of swf on eur and a constant
+X = sm.add_constant(df['eur'])
+model = sm.OLS(df['swf'], X).fit()
+
+# Get the residuals
+df['resid.swfeur'] = model.resid
+
+c. 
+from statsmodels.tsa.stattools import adfuller
+import statsmodels.api as sm
+import pandas as pd
+
+# Load the data
+df = pd.read_excel('Examination Dataset Final.xls')
+
+# First, get the first difference of the 'eur' variable
+eur_diff = df['eur'].diff().dropna()
+
+# Test for stationarity of the first difference of 'eur' using the augmented Dickey-Fuller test
+test = adfuller(eur_diff, maxlag=2, regression='ct', regresults=True)
+print('Test statistic = {:.46}, p-value = {:.46}'.format(test[0], test[1]))
+
+# Run a linear regression of 'swf' on 'eur' and a constant
+X = sm.add_constant(df[['eur']])
+model = sm.OLS(df['swf'], X).fit()
+
+# Get the residuals from the linear regression
+df['resid.swfeur'] = model.resid
+
+# Test for stationarity of the residual series without a constant, a time trend, or a polynomial term
+resid_diff = df['resid.swfeur'].diff().dropna()
+test = adfuller(resid_diff, maxlag=2, regression=None, autolag=None)
+print('Test statistic = {:.46}, p-value = {:.46}'.format(test[0], test[1]))
+
+
+
+Question 3:
+
+a.
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+
+# Load the dataset
+df = pd.read_excel('ExaminationDatasetFinal2.xls')
+
+# Create a time series for the Federal Fund Rate (ffr) variable
+ts_ffr = pd.Series(df['ffr'].values, index=pd.to_datetime(df['date']))
+
+# Plot the ACF and PACF of the ffr variable
+fig, ax = plt.subplots(2, 1, figsize=(12, 8))
+sm.graphics.tsa.plot_acf(ts_ffr, ax=ax[0])
+sm.graphics.tsa.plot_pacf(ts_ffr, ax=ax[1])
+plt.show()
+
+b. 
+
+import pandas as pd
+import statsmodels.api as sm
+
+# Load the dataset
+df = pd.read_excel('ExaminationDatasetFinal2.xls')
+
+# Create a time series for the Federal Fund Rate (ffr) variable
+ts_ffr = pd.Series(df['ffr'].values, index=pd.to_datetime(df['date']))
+
+# Perform ADF test
+result = sm.tsa.stattools.adfuller(ts_ffr, regression='ct', autolag=None)
+
+# Print test statistic and p-value
+print('ADF statistic:', result[0])
+print('p-value:', result[1])
+
+
+c. 
+# Create first difference
+diff_ffr = data['ffr'].diff().dropna()
+
+# ARIMA (1,0,1) model
+model_1 = sm.tsa.ARIMA(diff_ffr, order=(1,0,1))
+result_1 = model_1.fit()
+print(result_1.summary())
+
+# ARIMA (2,0,2) model
+model_2 = sm.tsa.ARIMA(diff_ffr, order=(2,0,2))
+result_2 = model_2.fit()
+print(result_2.summary())
+
+# The lower the AIC and BIC values, the better the model fits the data.
+
+d. 
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from statsmodels.tsa.arima.model import ARIMA
+
+# load the data
+data = pd.read_excel("ExaminationDatasetFinal2.xls")
+ffr = data['ffr']
+
+# fit the ARIMA (2,0,2) model
+model = ARIMA(ffr.diff().dropna(), order=(2,0,2))
+result = model.fit()
+
+# forecast for the next three quarters
+forecast = result.forecast(steps=3)
+
+# compute the mean, standard error, and confidence interval of the forecast
+mean = forecast.mean()
+se = forecast.se_mean
+ci = forecast.conf_int(alpha=0.05)
+
+# print the results
+print("Mean: ", mean)
+print("Standard Error: ", se)
+print("95% Confidence Interval:")
+print(ci)
